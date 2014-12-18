@@ -22,12 +22,12 @@ import antipackage
 Once `antipackage` has been imported you can simply import modules from GitHub using the syntax:
 
 ```python
-from github.username.repo import module
+from github.username.repo.branch.subpackages import module
 ```
 
 When you do this, the import hook will automatically download and install single file
-Python modules into the location `~/.antipackage/github/username/repo/module.py`. If the
-module every changes on GitHub it will be updated next time you import it.
+Python modules into the location `~/.antipackage/github/username/repo/testing/subpackages/module.py`.
+If the module ever changes on GitHub it will be updated next time you import it.
 
 ## Absolute imports
 
