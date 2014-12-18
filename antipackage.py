@@ -7,7 +7,7 @@ To use, just import `antigravity`:
 
 Then you can import single file Python modules from GitHub using:
 
-    from github.username.repo import module
+    from github.username.repo.branch.subpackages import module
 
 Modules are downloaded and cached locally. They are automatically updated to the latest version
 anytime they change on GitHub.
@@ -143,7 +143,7 @@ class GitHubImporter(object):
         except HTTPError:
             try:
                 self._build_path(fullname,url)
-            except HTTPError:
+            except HTTPError, e:
                 raise HTTPError(e)
         except IOError, e:
             raise InstallError('error downloading file')
