@@ -99,8 +99,9 @@ class GitHubImporter(object):
             test_url = 'https://github.com/' + '/'.join(pathlist[1:])
         else:
             test_url = 'https://github.com/' + '/'.join(pathlist[1:3]) + '/tree/' + '/'.join(pathlist[3:])
+        print(test_url)
         if urlopen(test_url).code == 404:
-            raise HTTPError('error 404: page not found')
+            raise HTTPError('error 404 - page not found')
         else:
             new, resp = urlretrieve(url)
             old = self._install_dirpath(fullname)
