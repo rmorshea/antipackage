@@ -1,1 +1,1 @@
-print "the file submodule.py was imported"
+print "The file submodule.py was imported!"
