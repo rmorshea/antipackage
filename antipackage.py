@@ -29,14 +29,14 @@ def wipe_installs():
     else:
         print('Cancled')
 
-def use_brancher():
-    """Replace all GitHubImporters in sys.meta_path with a GitHubBrancher"""
+def assume_brancher():
+    """Replace all GitHubImporters in sys.meta_path with one GitHubBrancher"""
     sys.meta_path = [imp for imp in sys.meta_path if not isinstance(imp, GitHubImporter)]
     sys.meta_path.insert(0, GitHubBrancher())
 
-def add_brancher(importer):
-    """Add a GitHubBrancher to sys.meta_path"""
-    sys.meta_path.insert(0, GitHubBrancher())
+def insert_brancher():
+    """Add a GitHubBrancher to the begining of sys.meta_path"""
+    sys.meta_path.append(GitHubBrancher())
 
 class GitHubImporter(object):
     
@@ -175,7 +175,7 @@ class GitHubBrancher(GitHubImporter):
         else:
             test_url = 'https://github.com/' + '/'.join(pathlist[1:3]) + '/tree/' + '/'.join(pathlist[3:])
         if urlopen(test_url).code == 404:
-            raise HTTPError('error 404: page not found')
+            raise HTTPError('error 404: page not found\n' + url)
         else:
             new, resp = urlretrieve(url)
             old = self._install_dirpath(fullname)
