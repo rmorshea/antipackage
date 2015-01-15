@@ -16,12 +16,20 @@ pip install git+https://github.com/ellisonbg/antipackage.git#egg=antipackage
 Enable `antipackage` by simply importing it:
 
 ```python
-import antipackage
+import antipackage as apkg
 ```
 
 Once `antipackage` has been imported you can simply import modules from GitHub using the syntax:
 
 ```python
+from github.username.repo import module
+```
+
+Additionally if you need to access a branch other than master, or want to install a module
+located in subpackes inside the GitHub repository, use the following command and import syntx:
+
+```python
+apkg.assume_brancher()
 from github.username.repo.branch.subpackages import module
 ```
 
