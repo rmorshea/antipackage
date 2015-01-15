@@ -8,7 +8,7 @@ Automagically import single file Python modules from GitHub.
 The `antipackage` package can be installed from GitHub using `pip`:
 
 ```
-pip install git+https://github.com/ellisonbg/antipackage.git#egg=antipackage
+pip install git+https://github.com/rmorshea/antipackage.git#egg=antipackage
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ from github.username.repo.branch.subpackages import module
 ```
 
 When you do this, the import hook will automatically download and install single file
-Python modules into the location `~/.antipackage/github/username/repo/testing/subpackages/module.py`.
+Python modules into the location `~/.antipackage/github/username/repo/branch/subpackages/module.py`.
 If the module ever changes on GitHub it will be updated next time you import it.
 
 ## Absolute imports
