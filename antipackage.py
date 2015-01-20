@@ -58,8 +58,8 @@ class GitHubImporter(object):
                     if len(comps)==4:
                         modname = comps[3]
                     elif len(comps)>4:
-                        raise InstallError('Import path must be `github.username.repo.module`:'
-                                            ' got `{0}` instead.'.format(fullname))
+                        raise InstallError('Import path must be github.username.repo.module:'
+                                            ' got {0} instead.'.format(fullname))
         return top, username, repo, modname
         
     def _install_init(self, path):
