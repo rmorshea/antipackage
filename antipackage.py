@@ -21,22 +21,31 @@ class InstallError(Exception):
 class HTTPError(Exception):
     pass
 
-def wipe_installs():
-    print('Wipe all local anitpackage installs? (y/n)')
-    if raw_input() is 'y':
-        shutil.rmtree(os.path.expanduser('~/.antipackage'))
-        print('antipackage wiped')
-    else:
-        print('Cancled')
+#def wipe_installs():
+#    print('Wipe all local anitpackage installs? (y/n)')
+#    if raw_input() is 'y':
+#        shutil.rmtree(os.path.expanduser('~/.antipackage'))
+#        print('antipackage wiped')
+#    else:
+#        print('cancled')
 
 def assume_brancher():
     """Replace all GitHubImporters in sys.meta_path with one GitHubBrancher"""
     sys.meta_path = [imp for imp in sys.meta_path if not isinstance(imp, GitHubImporter)]
     sys.meta_path.insert(0, GitHubBrancher())
 
+def assume_importer():
+    """Replace all GitHubImporters in sys.meta_path with one GitHubImporter"""
+    sys.meta_path = [imp for imp in sys.meta_path if not isinstance(imp, GitHubImporter)]
+    sys.meta_path.insert(0, GitHubImporter())
+
 def insert_brancher():
-    """Add a GitHubBrancher to the begining of sys.meta_path"""
+    """Add a GitHubBrancher to sys.meta_path"""
     sys.meta_path.append(GitHubBrancher())
+
+def insert_importer():
+    """Add a GitHubImporter to sys.meta_path"""
+    sys.meta_path.append(GitHubImporter())
 
 class GitHubImporter(object):
     
@@ -249,4 +258,4 @@ class GitHubBrancher(GitHubImporter):
                 else:
                     print('Error installing/updating module: ', fullname)
 
-sys.meta_path = [GitHubImporter()]
+sys.meta_path.insert(0, GitHubImporter())
