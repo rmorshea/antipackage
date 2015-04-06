@@ -39,14 +39,6 @@ def assume_importer():
     sys.meta_path = [imp for imp in sys.meta_path if not isinstance(imp, GitHubImporter)]
     sys.meta_path.insert(0, GitHubImporter())
 
-def insert_brancher():
-    """Add a GitHubBrancher to sys.meta_path"""
-    sys.meta_path.append(GitHubBrancher())
-
-def insert_importer():
-    """Add a GitHubImporter to sys.meta_path"""
-    sys.meta_path.append(GitHubImporter())
-
 class GitHubImporter(object):
     
     def __init__(self):
