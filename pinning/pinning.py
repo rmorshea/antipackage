@@ -1,13 +1,12 @@
 import os
 import json
-from git import pin as gitpin
+from git import pin as gitpin, pinform as gitform
 
-_base_dir = None
 class RetrieveError(Exception): pass
+_base_dir = os.path.expanduser('~/.antipackage')
 
 def pin(path, **kwargs):
     """Mark a repo with a branch, tag, or sha pin
-
     Paramters
     ---------
     path : str
@@ -24,20 +23,19 @@ def pin(path, **kwargs):
         version of the repository which orrisponds to that
         particular commit during all future imports.
     """
-    _setup_pinning()
     if len(kwargs) == 0:
         raise ValueError('No pin provided')
     if len(kwargs) > 1:
         raise ValueError('Only one pin allowed per path')
     if path.startswith('github'):
         pathlist = _parse_path(path)
-        name, pin = kwargs.items()[0]
-        data = gitpin(pathlist, name, pin)
-        __push__(pathlist, data)
+        name, value = kwargs.items()[0]
+        if data(path+'/'+gitform[name])!=value:
+            p = gitpin(pathlist, name, value)
+            __push__(pathlist, p)
 
 def data(path=None):
     """Get pinning data at the given path
-
     Parameters
     ----------
     path : str
@@ -47,7 +45,6 @@ def data(path=None):
         return the sha associated with that particular
         repository.
     """
-    _setup_pinning()
     err = "No data at '%s'" % path
     pathlist = _parse_path(path)
     with open(_base_dir+'/pinnings.json','r') as f:
@@ -61,12 +58,6 @@ def data(path=None):
                     return None
             return data
 
-def _setup_pinning():
-    path = _base_dir+'/pinnings.json'
-    if not os.path.isfile(path):
-        with open(path, 'w+') as f:
-            json.dump({},f)
-
 def _parse_path(path):
     if path:
         if path[0]=='/':
@@ -77,7 +68,6 @@ def _parse_path(path):
 
 def __push__(pathlist, pin):
     """Push a pin to the location given by pathlist
-
     Notes
     -----
     pins can be pushed to any path
@@ -106,7 +96,6 @@ def __push__(pathlist, pin):
 
 def __pull__(pathlist):
     """Remove a pin from the location given by pathlist
-
     Notes
     -----
     Only data structures containing an attribute 'id' with
