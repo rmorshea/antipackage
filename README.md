@@ -25,17 +25,51 @@ Once `antipackage` has been imported you can simply import modules from GitHub u
 from github.username.repo import module
 ```
 
-Additionally if you need to access a branch other than master, or want to install a module
-located in subpackes inside the GitHub repository, use the following command and import syntx:
-
-```python
-apkg.assume_brancher()
-from github.username.repo.branch.subpackages import module
-```
-
 When you do this, the import hook will automatically download and install single file
 Python modules into the location `~/.antipackage/github/username/repo/branch/subpackages/module.py`.
 If the module ever changes on GitHub it will be updated next time you import it.
+
+## Pinning
+
+The alternate way to import with antipackage is with pins. Pinning allows for a repo to be retrieved
+from a particular branch, tag, or commit during all future imports. By default antipackage will tag a
+repo with a branch pin to 'master'. Marking a repo with a branch pin will cause antipackage to pull
+from the most recent version found on that branch. However marking a repo with a sha or tag pin will
+force antipackage to draw on version of the repository which corrisponds to that particular commit.
+
+To enable this functionality using `pin` in `pinning` by giving a repo path along with a pin type and value:
+
+```python
+apkg.pinning.pin('github/username/repo', sha='0158d2c0824e7162c1721174cb967d9efbfbbdb0')
+```
+
+Access pinning data using `data` in `pinning` also by giving a path. The difference here is that paths
+can also retrieve specific data attributes, by extending the path into the pin itself:
+
+```python
+# returns all pinning data
+apkg.pinning.data()
+```
+
+or 
+
+```python
+# the path to 'sha' will return
+# the sha string the repo is
+# currently associated with
+apkg.pinning.data('github/username/repo/commit/sha')
+
+# the path to 'url' will return
+# the url which the sha string
+# was sourced from
+apkg.pinning.data('github/username/repo/commit/url')
+
+# the 'branch' and 'tag' paths
+# are only present that is what
+# was pinned to the repository
+apkg.pinning.data('github/username/repo/tag')
+apkg.pinning.data('github/username/repo/branch')
+```
 
 ## Absolute imports
 
