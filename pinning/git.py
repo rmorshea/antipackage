@@ -12,6 +12,11 @@ _urlhost = {'top': 'https://api.github.com/repos/{1}/{2}/',
             'sha': 'commits/{0}',
             'tag': 'tags'}
 
+pinform = {'tag':'tag',
+           'branch':'branch',
+           'sha':'commit/sha',
+           'url':'commit/url'}
+
 def pin(pathlist, name, value):
     """Returns a pin containing data for imports
 
