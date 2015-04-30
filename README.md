@@ -35,7 +35,7 @@ The alternate way to import with antipackage is with pins. Pinning allows for a 
 from a particular branch, tag, or commit during all future imports. By default antipackage will tag a
 repo with a branch pin to 'master'. Marking a repo with a branch pin will cause antipackage to pull
 from the most recent version found on that branch. However marking a repo with a sha or tag pin will
-force antipackage to draw on version of the repository which corrisponds to that particular commit.
+force antipackage to draw on the version of the repository which corrisponds to that particular commit.
 
 To enable this functionality using `pin` in `pinning` by giving a repo path along with a pin type and value:
 
