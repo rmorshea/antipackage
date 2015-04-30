@@ -33,7 +33,14 @@ class RetrieveError(Exception): pass
 # - - - - - - - -
 
 _base_dir = os.path.expanduser('~/.antipackage')
-pinning._base_dir = _base_dir
+
+def _setup_pinning(fname):
+    path = _base_dir+'/'+fname
+    if not os.path.isfile(path):
+        with open(path, 'w+') as f:
+            json.dump({},f)
+
+_setup_pinning('pinnings.json')
 
 # - - - - - -
 
@@ -58,9 +65,9 @@ class GitHubImporter(object):
         fill = lambda c: c+[None for i in range(3-len(c))]
         self.top, self.username, self.repo = fill(comps[:3])
         if len(comps)==3:
-            self.data = pinning.data('/'.join(comps))
+            self._data = pinning.data('/'.join(comps))
         else:
-            self.data = None
+            self._data = None
 
     def _setup_package(self, path):
         if len(self.pathlist)<4:
@@ -79,8 +86,8 @@ class GitHubImporter(object):
 
     def url(self):
         path = ['repos',self.username, self.repo,'zipball']
-        if self.data:
-            sha = self.data['commit']['sha']
+        if self._data:
+            sha = self._data['commit']['sha']
             path.append(sha)
         else:
             value = 'master'
@@ -110,11 +117,11 @@ class GitHubImporter(object):
     def _update(self):
         repo = '.'.join(self.pathlist[1:])
         for k in ['branch', 'tag']:
-            if k in self.data:
+            if k in self._data:
                 plist = self.pathlist[1:]
-                url = pinning.git._url(plist, k, self.data[k])
-                sha = pinning.git._sha(url, k, self.data[k])
-                if sha != self.data['commit']['sha']:
+                url = pinning.git._url(plist, k, self._data[k])
+                sha = pinning.git._sha(url, k, self._data[k])
+                if sha != self._data['commit']['sha']:
                     print('Updating repo: %s' % repo)
                     return True
         print('Using existing version: %s' % repo)
@@ -125,7 +132,7 @@ class GitHubImporter(object):
         path = os.path.join(*self.pathlist)
         self._setup_package(path)
         if len(fullname.split('.'))==3:
-            no_data = not self.data
+            no_data = not self._data
             no_path = not os.path.exists(path)
             if no_data or no_path or self._update():
                 self._install_package(path)
