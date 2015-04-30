@@ -1,7 +1,7 @@
 AntiPackage
 ===========
 
-Automagically import single file Python modules from GitHub.
+Automagically import lightweight Python packages from GitHub.
 
 ## Installation
 
@@ -25,9 +25,10 @@ Once `antipackage` has been imported you can simply import modules from GitHub u
 from github.username.repo import module
 ```
 
-When you do this, the import hook will automatically download and install single file
-Python modules into the location `~/.antipackage/github/username/repo/branch/subpackages/module.py`.
-If the module ever changes on GitHub it will be updated next time you import it.
+When you do this, the import hook will automatically download and install the whole github repository
+into the location `~/.antipackage/github/username/repo`. Thus antipackage can support modules with
+relatively lightweight dependancies. If the repository ever changes on GitHub it will be updated the
+next time you import it.
 
 ## Pinning
 
@@ -44,7 +45,7 @@ apkg.pinning.pin('github/username/repo', sha='0158d2c0824e7162c1721174cb967d9efb
 ```
 
 Similarly, you access pinning data using `data` in `pinning` by giving a path to the information you need.
-Thus paths can also retrieve specific data attributes, by extending the path into the pin itself:
+Thus paths can also retrieve specific data attributes by extending the it into the pin itself:
 
 ```python
 # returns all pinning data
