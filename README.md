@@ -37,7 +37,7 @@ repo with a branch pin to 'master'. Marking a repo with a branch pin will cause 
 from the most recent version found on that branch. However marking a repo with a sha or tag pin will
 force antipackage to draw on the version of the repository which corrisponds to that particular commit.
 
-To enable this functionality using `pin` in `pinning` by giving a repo path along with a pin type and value:
+To enable this functionality, use `pin` in `pinning` by giving a path along with a pin type and value:
 
 ```python
 apkg.pinning.pin('github/username/repo', sha='0158d2c0824e7162c1721174cb967d9efbfbbdb0')
@@ -54,19 +54,17 @@ apkg.pinning.data()
 or 
 
 ```python
-# the path to 'sha' will return
-# the sha string the repo is
-# currently associated with
+# the path to 'sha' holds the sha string
+# the repo is currently associated with
 apkg.pinning.data('github/username/repo/commit/sha')
 
-# the path to 'url' will return
-# the url which the sha string
-# was sourced from
+# the path to 'url' holds the url which
+# the sha string was sourced from
 apkg.pinning.data('github/username/repo/commit/url')
 
-# the 'branch' and 'tag' paths
-# are only present that is what
-# was pinned to the repository
+# the 'branch' and 'tag' paths hold the
+# branch or tag name respectively if
+# that's what the repo is associate with
 apkg.pinning.data('github/username/repo/tag')
 apkg.pinning.data('github/username/repo/branch')
 ```
