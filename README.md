@@ -43,8 +43,9 @@ To enable this functionality, use `pin` in `pinning` by giving a path along with
 apkg.pinning.pin('github/username/repo', sha='0158d2c0824e7162c1721174cb967d9efbfbbdb0')
 ```
 
-Access pinning data using `data` in `pinning` also by giving a path. The difference here is that paths
-can also retrieve specific data attributes, by extending the path into the pin itself:
+Similarly, you access pinning data using `data` in `pinning` by giving a path to the information you need.
+The difference here is that paths can also retrieve specific data attributes, by extending the path into
+the pin itself:
 
 ```python
 # returns all pinning data
