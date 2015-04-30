@@ -34,13 +34,15 @@ class RetrieveError(Exception): pass
 
 _base_dir = os.path.expanduser('~/.antipackage')
 
-def _setup_pinning(fname):
-    path = _base_dir+'/'+fname
+def _setup(base_dir, fname):
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
+    path = base_dir+'/'+fname
     if not os.path.isfile(path):
-        with open(path, 'w+') as f:
+        with open(path, 'w') as f:
             json.dump({},f)
 
-_setup_pinning('pinnings.json')
+_setup(_base_dir,'pinnings.json')
 
 # - - - - - -
 
@@ -50,8 +52,7 @@ class GitHubImporter(object):
     git = 'https://api.github.com'
 
     def __init__(self):
-        if not os.path.exists(self.base_dir):
-            os.makedirs(self.base_dir)
+        
         sys.path.append(self.base_dir)
         self.branch = None
 
