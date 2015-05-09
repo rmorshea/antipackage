@@ -41,7 +41,7 @@ force antipackage to draw on the version of the repository which corrisponds to 
 To enable this functionality, use `pin` in `pinning` by giving a path along with a pin type and value:
 
 ```python
-apkg.pinning.pin('github/username/repo', sha='0158d2c0824e7162c1721174cb967d9efbfbbdb0')
+apkg.pin('github/username/repo', sha='0158d2c0824e7162c1721174cb967d9efbfbbdb0')
 ```
 
 Similarly, you access pinning data using `data` in `pinning` by giving a path to the information you need.
@@ -49,7 +49,7 @@ Thus paths can also retrieve specific data attributes by extending the it into t
 
 ```python
 # returns all pinning data
-apkg.pinning.data()
+apkg.data()
 ```
 
 or 
@@ -57,17 +57,17 @@ or
 ```python
 # the path to 'sha' holds the sha string
 # the repo is currently associated with
-apkg.pinning.data('github/username/repo/commit/sha')
+apkg.data('github/username/repo/commit/sha')
 
 # the path to 'url' holds the url which
 # the sha string was sourced from
-apkg.pinning.data('github/username/repo/commit/url')
+apkg.data('github/username/repo/commit/url')
 
 # the 'branch' and 'tag' paths hold the
 # branch or tag name respectively if
 # that's what the repo is associate with
-apkg.pinning.data('github/username/repo/tag')
-apkg.pinning.data('github/username/repo/branch')
+apkg.data('github/username/repo/tag')
+apkg.data('github/username/repo/branch')
 ```
 
 ## Absolute imports
