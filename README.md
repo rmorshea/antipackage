@@ -5,13 +5,13 @@ Automagically import lightweight Python packages from GitHub.
 
 ## Installation
 
-The `antipackage` package can be installed from GitHub using `pip`:
+`antipackage` can be installed from GitHub using `pip`:
 
 ```
 pip install git+https://github.com/rmorshea/antipackage.git#egg=antipackage
 ```
 
-## Usage
+## Basic Usage
 
 Enable `antipackage` by simply importing it:
 
@@ -70,12 +70,38 @@ apkg.data('github/username/repo/tag')
 apkg.data('github/username/repo/branch')
 ```
 
-## Absolute imports
+##Import Replacements
+The method `import_replacement` allows for substitutions in import statements. This resolves an issue
+where one might want to download a repository whose name includes a reserved character. For example,
+the following import statement is invalid due to the inclusion of the "-" character:
 
-The `antipackage` package is written looking forward to the days when Python 2 is no longer
-supported. Because of this, the import hooks used in `antipackage` assume that relative imports
-are not used in the single file modules that are being imported. To enable this behavior for Python 2,
-add the following line at the top of your modules:
+```python
+import github.jdfreder.ipython-d3networkx
+```
+
+To get around this problem we make an import replacement along with a revised import statement:
+
+```python
+apkg.import_replacement('ipython_d3networkx','ipython-d3networkx')
+import github.jdfreder.ipython_d3networkx
+```
+
+The method `import_replacement` substitutes the value, `'ipython-d3networkx'`, in for **all** instance
+of the key, `'ipython_d3networkx'`, in subsiquent import statements until the rule is removed by calling:
+
+```python
+apkg.import_replacement('ipython_d3networkx', remove=True)
+```
+
+Thus import statements which would normally require reserved characters can be made valid while
+still pointing to the intended repository. It should be noted that the sweeping application of the
+method means specific replacements should be made a habbit.
+
+##Absolute Imports
+`antipackage` is written looking forward to the days when Python 2 is no longer
+supported. Because of this, the import hooks used in `antipackage` assume that relative imports are not
+used in the single file modules that are being imported. To enable this behavior for Python 2, add the
+following line at the top of your modules:
 
 ```python
 from __future__ import absolute_import
