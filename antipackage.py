@@ -34,26 +34,33 @@ class GitHubError(Exception): pass
 # - - - - - - - - -
 
 _conv = {}
+_reserved = ['.', os.path.sep, 'github']
 
-def replace_char(key, value=None, remove=False):
-    """Replace `key` with `value` in all import calls
+def import_replacement(key, value=None, remove=False):
+    """Replaces all instances of `key` with `value` in import calls
 
     Notes
     -----
     setting `remove` to True deletes a previously
     created replacement rule assigned to `key`"""
     if not remove:
-        if key != '.':
+        if key not in _reserved:
             _conv[key] = value
         else:
-            raise ValueError("'.' is a reserved character")
+            raise ValueError("'%s' is a reserved key" % key)
     else:
         del _conv[key]
 
-def repr_conv(chars):
-    """Applies replacements specified by `replace_char`"""
+def _repr_conv(chars):
+    """Applies replacements specified by `import_replacement`"""
     for key in _conv:
         chars = chars.replace(key, _conv[key])
+    return chars
+
+def _undo_conv(chars):
+    """Undoes replacements specified by `import_replacement`"""
+    for key in _conv:
+        chars = chars.replace(_conv[key], key)
     return chars
 
 def display_download(count, block, size):
@@ -63,7 +70,7 @@ def display_download(count, block, size):
     -----
     Supply as the 'reporthook' for urlretrieve"""
     fraction = size/block
-    if fraction>10:
+    if fraction>3:
         percent = int(count*100/fraction)
         sys.stdout.write("\rDownload in progress... %d%%" % percent)
         sys.stdout.flush()
@@ -88,7 +95,7 @@ _BASE_DIR, _DATA_PATH = _setup('.antipackage','pinnings.json')
 # Main Data Management Object and Functions
 # - - - - - - - - - - - - - - - - - - - - -
 
-def pin(path, **kwargs):
+def pin(path, branch=None, sha=None, tag=None):
     """Associate a repo with a particular version
 
     GitHub Paramters
@@ -104,13 +111,15 @@ def pin(path, **kwargs):
         Marking a repo with a branch pin will cause antipackage
         to pull from the most recent version found on that
         branch when importing. However marking a repo with a
-        sha or tag pin will force antipackage to draw on
-        version of the repository which orrisponds to that
+        sha or tag pin will force antipackage to draw on the
+        version of the repository which corrisponds to that
         particular commit during all future imports. Default
         points to 'master' branch of the repository indicated
         by path.
     """
-    Author(path,True).write(**kwargs)
+    raw = {'branch':branch, 'sha':sha, 'tag':tag}
+    kwargs = {k:v for k,v in raw.items() if v is not None}
+    PackageState(path).write(**kwargs)
 
 def data(path=None):
     """Get a dictionary of pinning data at the given path
@@ -133,10 +142,10 @@ def data(path=None):
                     return dict()
             return data
 
-class Author(object):
+class PackageState(object):
 
-    def __init__(self, path, save=True):
-        """Container holding private pinning formatters
+    def __init__(self, path, source=None, save=True):
+        """Container for private pinning formatters that write to file
 
         Parameters
         ----------
@@ -153,6 +162,7 @@ class Author(object):
             'False' the formatter in 'self.write' returns the pin and
             does not push them to the path.
         """
+        self.source = source
         self.path = path.strip('/')
         self.pathlist = self.path.split('/')
         try:
@@ -173,8 +183,12 @@ class Author(object):
         for key, ext in pathing.items():
             if name==key:
                 if value!=data(self.path+ext):
-                    repo = GitHubRepo(self.pathlist, name, value)
-                    self._new = {'commit':{'sha':repo.sha,'url':repo.url}}
+                    if not self.source:
+                        username = self.pathlist[1]
+                        reponame = self.pathlist[2]
+                        self.source = GitHubRepo(username, reponame, name, value)
+                    self.source.pull_data()
+                    self._new = {'commit':{'sha':self.source.sha,'url':self.source.url}}
                     if name=='branch':
                         self._new['branch'] = value
                     elif name=='tag':
@@ -222,17 +236,23 @@ class GitHubHook(object):
 
     def __init__(self, fullname):
         """Handles imports from GitHub"""
+        self.repo = None
         self.comps = fullname.split('.')
         fill = lambda c: c+[None for i in range(3-len(c))]
         index = [_BASE_DIR] + fill(self.comps[:3])
-        self.top, self.username, self.repo = index[1:]
+        self.top, self.username, self.reponame = index[1:]
         self.index = [key for key in index if key]
-        self.path = os.path.join(*self.index)
+        self.path = _undo_conv(os.path.join(*self.index))
         self._setup_package()
+
+    def update_or_install(self):
+        """Evaluates whether installation should occur"""
+        if len(self.comps)==3 and (not self._exists() or self._update()):
+            self._install()
 
     def _setup_package(self):
         """Create package directories and __init__ files"""
-        if not self.repo:
+        if not self.reponame:
             if not os.path.exists(self.path):
                 os.makedirs(self.path)
             self._install_init()
@@ -247,38 +267,85 @@ class GitHubHook(object):
         with open(path, 'a'):
             os.utime(path, None)
 
-    def waiting(self):
-        """Ready for import?"""
-        if not self.repo or len(self.comps)>3:
-            return True
-        return False
-
-    def exists(self):
+    def _exists(self):
         """Data and self.path exist?"""
         self.data = data('/'.join(self.index[1:]))
         return os.path.exists(self.path) and self.data
 
-    def update(self):
+    def _update(self):
         """Use existing files?"""
         pathlist = self.index[1:]
         reponame = '.'.join(pathlist)
         for key in self.data:
             if key in ('branch','tag'):
-                repo = GitHubRepo(pathlist, key, self.data[key])
-                if repo.sha != self.data['commit']['sha']:
-                    print('Updating repo: %s' % reponame)
-                    self.data['commit']['sha'] = repo.sha
-                    return True
+                try:
+                    self.repo = GitHubRepo(self.username,self.reponame, key, self.data[key])
+                    self.repo.pull_data()
+                    if self.repo and self.repo.sha != self.data['commit']['sha']:
+                        print('Updating repo: %s' % reponame)
+                        return True
+                except GitHubError, e:
+                    print(str(e))
         print('Using existing version of: %s' % reponame)
         return False
 
-    def install(self):
-        """Download and install new repository at self.path"""
-        url = self.zip()
-        print("Downloading from: %s" % url)
+    def _install(self):
+        """Install new repository at self.path"""
+        if not self.repo:
+            self.repo = GitHubRepo(self.username,self.reponame)
+            PackageState('/'.join(self.index[1:]),self.repo).write(branch='master')
+        self.repo.download(self.path)
+        self._install_init()
+
+class GitHubRepo(object):
+
+    host = {'top': 'https://api.github.com/repos/{0}/{1}/',
+            'branch': 'branches/{0}',
+            'sha': 'commits/{0}',
+            'tag': 'tags'}
+
+    def __init__(self, username, reponame, name='branch', value='master'):
+        """Stores downloads and formats key GitHub repository information
+
+        Parameters
+        ----------
+        username : str
+            A GitHub username
+        reponame:
+            The name of a repository owned by the given user
+        name : str
+            Should be either 'sha', 'tag' or 'branch' and
+            indicates the version access method for the repo
+        value : str
+            specific to `name` and indicated the specific
+            repository version being referenced"""
+        self.username = username
+        self.reponame = reponame
+        self.name = name
+        self.value = value
+        names = (self.username,self.reponame)
+        url = self.host['top'].format(*names)
+        url += self.host[self.name].format(self.value)
+        self.url = url
+        self._pulled = False
+
+    def pull_data(self, force=False):
+        """Initialize data from GitHub"""
+        if force or not self._pulled:
+            filepath = self._fetch()
+            with open(filepath, 'r') as f:
+                data = json.load(f)
+                self.sha = self._sha(data)
+                self.zip = self._zip()
+            self._pulled = True
+
+    def download(self, path):
+        """Download and save new repository to path"""
+        self.pull_data()
+        print("Downloading from: %s" % self.zip)
         sys.stdout.flush()
-        temp_file, response = urlretrieve(url, reporthook=display_download)
-        zf = zipfile.ZipFile(temp_file)
+        filepath, response = urlretrieve(self.zip,reporthook=display_download)
+        zf = zipfile.ZipFile(filepath)
         fname = zf.filename
         with TemporaryDirectory() as td:
             zf.extractall(td)
@@ -286,75 +353,24 @@ class GitHubHook(object):
             for name in contents:
                 if name.startswith(self.username):
                     tmp_repo = name
-            if os.path.exists(self.path):
-                shutil.rmtree(self.path)
-            os.rename(td+'/'+tmp_repo, self.path)
-        self._install_init()
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.rename(td+'/'+tmp_repo, path)
+        zf.close()
 
-    def zip(self):
-        """Returns url to the reopsitory's .zip file"""
-        path = ['repos',self.username, self.repo,'zipball']
-        if self.data:
-            src = self.data['commit']['sha']
-        else:
-            pin('/'.join(self.index[1:]))
-            src = 'master'
-        path.append(src)
-        return 'https://api.github.com/'+'/'.join(path)
-
-class GitHubRepo(object):
-
-    host = {'top': 'https://api.github.com/repos/{1}/{2}/',
-            'branch': 'branches/{0}',
-            'sha': 'commits/{0}',
-            'tag': 'tags'}
-
-    def __init__(self, pathlist, name='branch', value='master'):
-        """Stores key GitHub repository information
-
-        Parameters
-        ----------
-        pathlist : list
-            Of the form `[github, username, repository]`
-            and indicates the repository that should be
-            accessed
-        name : str
-            Should be either 'sha', 'tag' or 'branch' and
-            indicates the version access method for the repo
-        value : str
-            specific to `name` and indicated the specific
-            repository version being referenced"""
-        self.name = name
-        self.value = value
-        self.url = self._url(pathlist)
-        self._git_init()
-
-    def _url(self, pathlist):
-        """Format the GitHub url"""
-        url = self.host['top'].format(*pathlist)
-        url += self.host[self.name].format(self.value)
-        return url
-
-    def _git_init(self):
-        """Initialize data from GitHub"""
-        temp_file = self.fetch()
-        with open(temp_file, 'r') as f:
-            data = json.load(f)
-            self.sha = self._sha(data)
-
-    def fetch(self):
+    def _fetch(self):
         """Retrieve data from GitHub"""
-        temp_file, response = urlretrieve(self.url)
+        filepath, response = urlretrieve(self.url)
         if not response['Status'] == '200 OK':
             e = 'at '+self.url
             try:
-                with open(temp_file, 'r') as f:
+                with open(filepath, 'r') as f:
                     out = json.load(f)
                 e = "message "+e+" = '"+out['message']+"'"
             except:
                 pass
             raise GitHubError(e)
-        return temp_file
+        return filepath
 
     def _sha(self, data):
         """Return the sha"""
@@ -372,30 +388,30 @@ class GitHubRepo(object):
                 return tag
         raise RetrieveError("No tag with name: '%s'" % value)
 
+    def _zip(self):
+        """Returns url to the reopsitory's .zip file"""
+        if self.sha:
+            path = ['repos',self.username, self.reponame,'zipball',self.sha]
+        else:
+            raise RetrieveError('no sha found: call `self.download_data()`')
+        return 'https://api.github.com/'+'/'.join(path)
+
 # - - - - - - - - - - - -
 # Administrative Importer
 # - - - - - - - - - - - -
 
 class Importer(object):
 
-    github = GitHubHook
+    hooks = {'github':GitHubHook}
 
     def __init__(self):
         sys.path.append(_BASE_DIR)
 
     def find_module(self, fullname, path=None):
-        fullname = repr_conv(fullname)
+        fullname = _repr_conv(fullname)
         prefix = fullname.split('.')[0]
-        if hasattr(self, prefix):
-            source = getattr(self, prefix)(fullname)
-            if self.require(source):
-                source.install()
-                source.required = True
-
-    def require(self, source):
-        """Evaluates whether installation should occur"""
-        if not source.waiting():
-            return not source.exists() or source.update()
-        return False
+        if prefix in self.hooks:
+            hook = self.hooks[prefix](fullname)
+            hook.update_or_install()
 
 sys.meta_path.insert(0, Importer())
