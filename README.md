@@ -38,14 +38,14 @@ repo with a branch pin to 'master'. Marking a repo with a branch pin will cause 
 from the most recent version found on that branch. However marking a repo with a sha or tag pin will
 force antipackage to draw on the version of the repository which corrisponds to that particular commit.
 
-To enable this functionality, use `pin` in `pinning` by giving a path along with a pin type and value:
+To enable this functionality, use `pin` by giving a path along with a pin type and value:
 
 ```python
 apkg.pin('github/username/repo', sha='0158d2c0824e7162c1721174cb967d9efbfbbdb0')
 ```
 
-Similarly, you access pinning data using `data` in `pinning` by giving a path to the information you need.
-Thus paths can also retrieve specific data attributes by extending the it into the pin itself:
+Similarly, you access pinning data using `data` by giving a path to the information you need.
+Thus paths can also retrieve specific data attributes by extending it into the pin itself:
 
 ```python
 # returns all pinning data
@@ -55,6 +55,9 @@ apkg.data()
 or 
 
 ```python
+# returns the pin for a repo
+apkg.data('github/username/repo)
+
 # the path to 'sha' holds the sha string
 # the repo is currently associated with
 apkg.data('github/username/repo/commit/sha')
@@ -69,6 +72,8 @@ apkg.data('github/username/repo/commit/url')
 apkg.data('github/username/repo/tag')
 apkg.data('github/username/repo/branch')
 ```
+
+If no data is present at the given path then an empty dictionary will be returned without an error.
 
 ##Import Replacements
 The method `import_replacement` allows for substitutions in import statements. This resolves an issue
