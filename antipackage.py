@@ -15,7 +15,6 @@ import sys
 import shutil
 import json
 import zipfile
-import shutil
 
 try:
     # python 2 import
