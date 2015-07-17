@@ -173,6 +173,7 @@ class PackageState(object):
 
     def _github(self, **kwargs):
         """Return or write GitHub pinning data"""
+        force = kwargs.pop('force',False)
         if len(kwargs) == 0:
             kwargs = {'branch':'master'}
         if len(kwargs) > 1:
@@ -181,7 +182,7 @@ class PackageState(object):
         pathing = {'tag':'/tag', 'branch':'/branch', 'sha':'/commit/sha'}
         for key, ext in pathing.items():
             if name==key:
-                if value!=data(self.path+ext):
+                if force or value!=data(self.path+ext):
                     if not self.source:
                         username = self.pathlist[1]
                         reponame = self.pathlist[2]
@@ -201,7 +202,7 @@ class PackageState(object):
             if name not in ('branch','tag','sha'):
                 raise ValueError("Keywords must be 'branch',"
                                 " 'tag' or 'sha' not: '%s'" % name)
-        
+
     def push(self):
         """Write pinning data to file"""
         try:
@@ -292,7 +293,8 @@ class GitHubHook(object):
         """Install new repository at self.path"""
         if not self.repo:
             self.repo = GitHubRepo(self.username,self.reponame)
-            PackageState('/'.join(self.index[1:]),self.repo).write(branch='master')
+        ps = PackageState('/'.join(self.index[1:]),self.repo)
+        ps.write(**{self.repo.name:self.repo.value,'force':True})
         self.repo.download(self.path)
         self._install_init()
 
