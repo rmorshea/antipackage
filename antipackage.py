@@ -1,7 +1,15 @@
 # encoding: utf-8
 """Automagically import single file Python modules from GitHub.
+<<<<<<< HEAD
 To use, just import `antipackage`:
     import antipackage
+=======
+
+To use, just import `antipackage`:
+
+    import antipackage
+
+>>>>>>> 7b918e54313f753eed29534b4d262944bc2d6233
 Then you can import single file Python modules from GitHub using:
     from github.username.repo import module
 Modules are downloaded and cached locally. They are automatically updated to the latest version
@@ -12,9 +20,20 @@ from __future__ import print_function
 
 import os
 import sys
+<<<<<<< HEAD
 import shutil
 import json
 import zipfile
+=======
+import hashlib
+import shutil
+# Imports for urllib are different in py2 vs. py3
+try: 
+    from urllib import urlretrieve
+except ImportError:
+    from urllib.request import urlretrieve
+
+>>>>>>> 7b918e54313f753eed29534b4d262944bc2d6233
 
 try:
     # python 2 import
@@ -415,4 +434,8 @@ class Importer(object):
             hook = self.hooks[prefix](fullname)
             hook.update_or_install()
 
+<<<<<<< HEAD
 sys.meta_path.insert(0, Importer())
+=======
+sys.meta_path = [GitHubImporter()]
+>>>>>>> 7b918e54313f753eed29534b4d262944bc2d6233

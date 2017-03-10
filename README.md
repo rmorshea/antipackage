@@ -25,10 +25,16 @@ Once `antipackage` has been imported you can simply import modules from GitHub u
 from github.username.repo import module
 ```
 
+<<<<<<< HEAD
 When you do this, the import hook will automatically download and install the whole GitHub repository
 into the location `~/.antipackage/github/username/repo`. Thus antipackage can support modules with
 relatively lightweight dependancies. If the repository ever changes on GitHub it will be updated the
 next time you import it.
+=======
+When you do this, the import hook will automatically download and install single file
+Python modules into the location `~/.antipackage/github/username/repo/module.py`. If the
+module ever changes on GitHub it will be updated next time you import it.
+>>>>>>> 7b918e54313f753eed29534b4d262944bc2d6233
 
 ## Pinning
 
