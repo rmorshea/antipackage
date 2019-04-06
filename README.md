@@ -25,16 +25,10 @@ Once `antipackage` has been imported you can simply import modules from GitHub u
 from github.username.repo import module
 ```
 
-<<<<<<< HEAD
 When you do this, the import hook will automatically download and install the whole GitHub repository
 into the location `~/.antipackage/github/username/repo`. Thus antipackage can support modules with
 relatively lightweight dependancies. If the repository ever changes on GitHub it will be updated the
 next time you import it.
-=======
-When you do this, the import hook will automatically download and install single file
-Python modules into the location `~/.antipackage/github/username/repo/module.py`. If the
-module ever changes on GitHub it will be updated next time you import it.
->>>>>>> 7b918e54313f753eed29534b4d262944bc2d6233
 
 ## Pinning
 
@@ -81,7 +75,7 @@ apkg.data('github/username/repo/branch')
 
 If no data is present at the given path then an empty dictionary will be returned without an error.
 
-##Import Replacements
+## Import Replacements
 The method `import_replacement` allows for substitutions in import statements. This resolves an issue
 where one might want to download a repository whose name includes a reserved character. For example,
 the following import statement is invalid due to the inclusion of the "-" character:
@@ -108,7 +102,7 @@ Thus import statements which would normally require reserved characters can be m
 still pointing to the intended repository. It should be noted that the sweeping application of the
 method means specific replacements should be made a habbit.
 
-##Absolute Imports
+## Absolute Imports
 `antipackage` is written looking forward to the days when Python 2 is no longer
 supported. Because of this, the import hooks used in `antipackage` assume that relative imports are not
 used in the single file modules that are being imported. To enable this behavior for Python 2, add the
