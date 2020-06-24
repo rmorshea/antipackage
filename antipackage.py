@@ -371,7 +371,7 @@ class GitHubRepo(object):
     def _fetch(self):
         """Retrieve data from GitHub"""
         filepath, response = urlretrieve(self.url)
-        if not response['Status'] == '200 OK':
+        if response['Status'] != '200 OK':
             e = 'at '+self.url
             try:
                 with open(filepath, 'r') as f:
